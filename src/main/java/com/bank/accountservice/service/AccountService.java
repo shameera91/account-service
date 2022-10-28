@@ -4,12 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
+import com.bank.accountservice.common.util.PaymentUtils;
 import com.bank.accountservice.common.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.util.EnumUtils;
 
-import com.bank.accountservice.common.enums.CurrencyType;
-import com.bank.accountservice.common.exception.InvalidCurrencyException;
 import com.bank.accountservice.dto.AccountDetailOutputDTO;
 import com.bank.accountservice.dto.BalanceOutputDTO;
 import com.bank.accountservice.dto.CreateAccountInputDTO;
@@ -35,13 +33,7 @@ public class AccountService {
 
 	public AccountDetailOutputDTO createNewBankAccount(CreateAccountInputDTO createAccountInputDTO) {
 
-		createAccountInputDTO.getCurrencyTypes().forEach(currency -> {
-			try {
-				EnumUtils.findEnumInsensitiveCase(CurrencyType.class, currency);
-			} catch (Exception e) {
-				throw new InvalidCurrencyException("Invalid Currency");
-			}
-		});
+		createAccountInputDTO.getCurrencyTypes().forEach(PaymentUtils::validateCurrencyType);
 
 		log.info("Initiate create new account for customer id: " + createAccountInputDTO.getCustomerId());
 
