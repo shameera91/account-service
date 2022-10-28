@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import com.bank.accountservice.dto.BalanceOutputDTO;
 import com.bank.accountservice.modal.Balance;
 
 /**
@@ -15,10 +16,12 @@ import com.bank.accountservice.modal.Balance;
 @Mapper
 public interface BalanceMapper {
 
-	@Insert("INSERT INTO balance(currency,amount,acc_id) " +
-			" VALUES (#{currency},#{amount},#{accId})")
-	void insertBalance(Balance balance);
+	@Insert("INSERT INTO balance(currency,amount,account_id) VALUES (#{currency},#{amount},#{accountId})")
+	void createBalance(Balance balance);
 
 	@Select("SELECT * FROM balance")
 	List<Balance> findAll();
+
+	@Select("SELECT b.amount,b.currency FROM balance b WHERE b.account_id = #{accountId} ")
+	List<BalanceOutputDTO> findBalancesByAccountId(long accountId);
 }

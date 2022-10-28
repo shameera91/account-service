@@ -14,9 +14,12 @@ import com.bank.accountservice.modal.Account;
 @Mapper
 public interface AccountMapper {
 
-	@Select("SELECT * FROM account")
-	List<Account> findAll();
+	@Select("INSERT INTO account(customer_id,country) VALUES (#{customerId},#{country}) returning id")
+	long createAccount(Account account);
 
-	@Select("INSERT INTO account(customer_id) VALUES (#{customerId}) returning id")
-	long insert(Account account);
+	@Select("SELECT * FROM account a WHERE a.id = #{id}")
+	Account findAccountById(long id);
+
+	@Select("SELECT * FROM account a WHERE a.account_id = #{accountId}")
+	Account findAccountDetailsByAccountId(String accountId);
 }

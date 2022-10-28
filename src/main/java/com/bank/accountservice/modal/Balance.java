@@ -1,7 +1,10 @@
 package com.bank.accountservice.modal;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.math.BigDecimal;
 
 /**
  * Created By Shameera.A on 10/26/2022
@@ -9,12 +12,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class Balance {
 
 	private long id;
 	private String currency;
-	private double amount;
+	private BigDecimal amount;
 
-	//used as the foreign key of this table
-	private long accId;
+	private long accountId;
 }
