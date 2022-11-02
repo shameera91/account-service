@@ -38,6 +38,8 @@ public class TransactionService {
 	private final BalanceMapper balanceMapper;
 	private final TransactionsMapper transactionsMapper;
 
+	//TODO publish insert and update operations in rabbbit mq
+
 	public TransactionDetailOutputDTO createTransaction(CreateTransactionInputDTO inputDTO) {
 
 		PaymentUtils.validateCurrencyType(inputDTO.getCurrency());
@@ -60,6 +62,8 @@ public class TransactionService {
 
 		BigDecimal balanceAmount = calculateAndAdjustBalance(account, transaction);
 
+		log.info("Adjust Balances and update account details completed");
+
 		long savedTransactionId = transactionsMapper.createTransaction(transaction);
 		log.info("Transaction Created Successfully");
 
@@ -72,7 +76,7 @@ public class TransactionService {
 	}
 
 	private BigDecimal calculateAndAdjustBalance(Account account, Transaction transaction) {
-
+		log.info("Adjust Balances and update account details initiated");
 		List<Balance> balancesByAccountId = balanceMapper.findAllBalanceDetailsByAccountId(account.getId());
 
 		Balance balanceObject = balancesByAccountId.stream()
@@ -91,7 +95,6 @@ public class TransactionService {
 
 			return updateBalance(balanceObject, balanceObject.getAmount().add(transaction.getAmount()));
 		}
-
 	}
 
 	private BigDecimal updateBalance(Balance balanceObject, BigDecimal balanceAmount) {
@@ -100,6 +103,7 @@ public class TransactionService {
 	}
 
 	public List<TransactionsOutputDTO> getTransactionsByAccountNumber(String accountId) {
+		log.info("Get transaction details by account id initiated");
 		Account account = getAccountDetailsByAccountId(accountId);
 
 		List<Transaction> transactionList = transactionsMapper.findTransactionsByAccountId(account.getId());
