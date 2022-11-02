@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.bank.accountservice.common.enums.TransactionDirection;
@@ -40,6 +41,7 @@ public class TransactionService {
 
 	//TODO publish insert and update operations in rabbbit mq
 
+	@Transactional
 	public TransactionDetailOutputDTO createTransaction(CreateTransactionInputDTO inputDTO) {
 
 		PaymentUtils.validateCurrencyType(inputDTO.getCurrency());

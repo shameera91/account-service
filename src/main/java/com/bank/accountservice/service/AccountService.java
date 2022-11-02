@@ -18,6 +18,7 @@ import com.bank.accountservice.modal.Balance;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created By Shameera.A on 10/26/2022
@@ -31,6 +32,7 @@ public class AccountService {
 	private final AccountMapper accountMapper;
 	private final BalanceMapper balanceMapper;
 
+	@Transactional
 	public AccountDetailOutputDTO createNewBankAccount(CreateAccountInputDTO createAccountInputDTO) {
 
 		createAccountInputDTO.getCurrencyTypes().forEach(PaymentUtils::validateCurrencyType);
