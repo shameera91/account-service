@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.bank.accountservice.common.Constants;
 import com.bank.accountservice.common.enums.TransactionDirection;
 import com.bank.accountservice.common.exception.PaymentException;
 import com.bank.accountservice.common.exception.ResourceNotFoundException;
@@ -38,8 +40,7 @@ public class TransactionService {
 	private final AccountMapper accountMapper;
 	private final BalanceMapper balanceMapper;
 	private final TransactionsMapper transactionsMapper;
-
-	//TODO publish insert and update operations in rabbbit mq
+	private final RabbitTemplate rabbitTemplate;
 
 	@Transactional
 	public TransactionDetailOutputDTO createTransaction(CreateTransactionInputDTO inputDTO) {
@@ -71,10 +72,17 @@ public class TransactionService {
 
 		Transaction savedTransaction = transactionsMapper.findTransactionById(savedTransactionId);
 
-		return TransactionDetailOutputDTO.builder().accountId(account.getAccountId())
-				.transactionId(savedTransaction.getTransactionId()).amount(savedTransaction.getAmount())
-				.currency(savedTransaction.getCurrency()).direction(savedTransaction.getDirection())
-				.description(savedTransaction.getDescription()).balanceAmount(balanceAmount).build();
+		TransactionDetailOutputDTO transactionDetailOutputDTO = TransactionDetailOutputDTO.builder()
+				.accountId(account.getAccountId()).transactionId(savedTransaction.getTransactionId())
+				.amount(savedTransaction.getAmount()).currency(savedTransaction.getCurrency())
+				.direction(savedTransaction.getDirection()).description(savedTransaction.getDescription())
+				.balanceAmount(balanceAmount).build();
+
+		rabbitTemplate.convertAndSend(Constants.EXCHANGE, Constants.TRANSACTION_ROUTING_KEY,
+				transactionDetailOutputDTO);
+		log.info("Transaction details published to {} successfully", Constants.TRANSACTION_QUEUE);
+
+		return transactionDetailOutputDTO;
 	}
 
 	private BigDecimal calculateAndAdjustBalance(Account account, Transaction transaction) {

@@ -4,8 +4,11 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.bank.accountservice.common.Constants;
 import com.bank.accountservice.common.exception.ResourceNotFoundException;
 import com.bank.accountservice.common.util.PaymentUtils;
 import com.bank.accountservice.dto.AccountDetailOutputDTO;
@@ -18,7 +21,6 @@ import com.bank.accountservice.modal.Balance;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created By Shameera.A on 10/26/2022
@@ -31,6 +33,7 @@ public class AccountService {
 
 	private final AccountMapper accountMapper;
 	private final BalanceMapper balanceMapper;
+	private final RabbitTemplate rabbitTemplate;
 
 	@Transactional
 	public AccountDetailOutputDTO createNewBankAccount(CreateAccountInputDTO createAccountInputDTO) {
@@ -54,8 +57,14 @@ public class AccountService {
 
 		List<BalanceOutputDTO> balancesByAccountId = balanceMapper.findBalancesByAccountId(savedAccountId);
 
-		return AccountDetailOutputDTO.builder().customerId(savedAccount.getCustomerId())
-				.accountId(savedAccount.getAccountId()).balances(balancesByAccountId).build();
+		AccountDetailOutputDTO accountDetailOutputDTO = AccountDetailOutputDTO.builder()
+				.customerId(savedAccount.getCustomerId()).accountId(savedAccount.getAccountId())
+				.balances(balancesByAccountId).build();
+
+		rabbitTemplate.convertAndSend(Constants.EXCHANGE, Constants.ACCOUNT_ROUTING_KEY, accountDetailOutputDTO);
+		log.info("Account creation details published to {} successfully", Constants.ACCOUNT_QUEUE);
+
+		return accountDetailOutputDTO;
 	}
 
 	public AccountDetailOutputDTO getAccountDetailsByAccountId(String accountId) {
