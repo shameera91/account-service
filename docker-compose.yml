@@ -9,11 +9,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=account-service-dev-db
 
-#  rabbitmq:
-#    image: rabbitmq:3-management
-#    ports:
-#      - "5672:5672"
-#      - "15672:15672"
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 
   app:
     container_name: app-springboot-postgresql
@@ -23,11 +23,11 @@ services:
       - "8080:8080"
     depends_on:
       - db
-      #- rabbitmq
+      - rabbitmq
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/account-service-dev-db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
-      #- SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_HOST=rabbitmq
 
 
